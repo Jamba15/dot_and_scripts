@@ -1,0 +1,94 @@
+sshrsync() {
+    # Declare associative array for hostname mappings
+    declare -A hosts=(
+        ["dante"]="giambagli@dante.physik.fu-berlin.de"
+        ["sheldon"]="giambagli@sheldon.physik.fu-berlin.de"
+        ["lise"]="bepjamba@blogin.hlrn.de"
+        ["allegro"]="giambagli@allegro.imp.fu-berlin.de"
+        ["juwels"]="giambagli1@juwels-booster.fz-juelich.de"
+    )
+    
+    local host1=""
+    local path1=""
+    local host2=""
+    local path2=""
+    local src=""
+    local dst=""
+    local uses_juwels=false
+    
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -h)
+                if [[ -z "$path1" ]]; then
+                    host1="$2"
+                    shift 2
+                    path1="$1"
+                    shift
+                else
+                    host2="$2"
+                    shift 2
+                    path2="$1"
+                    shift
+                fi
+                ;;
+            *)
+                if [[ -z "$path1" ]]; then
+                    path1="$1"
+                else
+                    path2="$1"
+                fi
+                shift
+                ;;
+        esac
+    done
+    
+    # Validate we have both paths
+    if [[ -z "$path1" ]] || [[ -z "$path2" ]]; then
+        echo "Usage: sshrsync [-h hostname] path_1 [-h hostname] path_2"
+        echo "Supported hostnames: dante, sheldon, lise, allegro, juwels"
+        return 1
+    fi
+    
+    # Build source path
+    if [[ -n "$host1" ]]; then
+        if [[ -z "${hosts[$host1]}" ]]; then
+            echo "Error: Unknown hostname '$host1'"
+            echo "Supported hostnames: dante, sheldon, lise, allegro, juwels"
+            return 1
+        fi
+        src="${hosts[$host1]}:$path1"
+        if [[ "$host1" == "juwels" ]]; then
+            uses_juwels=true
+        fi
+    else
+        src="$path1"
+    fi
+    
+    # Build destination path
+    if [[ -n "$host2" ]]; then
+        if [[ -z "${hosts[$host2]}" ]]; then
+            echo "Error: Unknown hostname '$host2'"
+            echo "Supported hostnames: dante, sheldon, lise, allegro, juwels"
+            return 1
+        fi
+        dst="${hosts[$host2]}:$path2"
+        if [[ "$host2" == "juwels" ]]; then
+            uses_juwels=true
+        fi
+    else
+        dst="$path2"
+    fi
+    
+    # Execute rsync with progress and common useful flags
+    echo "Syncing from: $src"
+    echo "Syncing to: $dst"
+    
+    if [[ "$uses_juwels" == true ]]; then
+        echo "Note: juwels requires OTP authentication. You will be prompted to enter your OTP code."
+        # Use SSH options for keyboard-interactive authentication
+        rsync -ravz --progress -e "ssh -o PreferredAuthentications=keyboard-interactive,publickey" "$src" "$dst"
+    else
+        rsync -ravz --progress "$src" "$dst"
+    fi
+}

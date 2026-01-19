@@ -1,0 +1,10 @@
+alias scratch="cd /local_scratch001/giambagli"
+alias stampa="lpr -P followme"
+alias nvim="/local_scratch001/giambagli/programs/neovim/bin/nvim"
+alias windows="xfreerdp /v:term.imp.fu-berlin.de /d:FU-BERLIN /u:giambagli /dynamic-resolution"
+alias sheldon='ssh giambagli@sheldon.physik.fu-berlin.de'
+alias dante='ssh giambagli@dante.physik.fu-berlin.de'
+alias findh='find . -type f -name'
+alias lise='ssh bepjamba@blogin.hlrn.de'
+alias allegro='ssh giambagli@allegro.imp.fu-berlin.de'
+alias juwels='ssh giambagli1@juwels-booster.fz-juelich.de'
