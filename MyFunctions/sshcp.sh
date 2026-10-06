@@ -6,6 +6,7 @@ sshcp() {
         ["lise"]="bepjamba@blogin.hlrn.de"
         ["allegro"]="giambagli@allegro.imp.fu-berlin.de"
         ["juwels"]="giambagli1@juwels-booster.fz-juelich.de"
+        ["jupiter"]="giambagli1@login.jupiter.fz-juelich.de"
     )
     
     local host1=""
@@ -14,7 +15,7 @@ sshcp() {
     local path2=""
     local src=""
     local dst=""
-    local uses_juwels=false
+    local uses_otp=false
     
     # Parse arguments
     while [[ $# -gt 0 ]]; do
@@ -46,7 +47,7 @@ sshcp() {
     # Validate we have both paths
     if [[ -z "$path1" ]] || [[ -z "$path2" ]]; then
         echo "Usage: sshcp [-h hostname] path_1 [-h hostname] path_2"
-        echo "Supported hostnames: dante, sheldon, lise, allegro, juwels"
+        echo "Supported hostnames: dante, sheldon, lise, allegro, juwels, jupiter"
         return 1
     fi
     
@@ -54,12 +55,12 @@ sshcp() {
     if [[ -n "$host1" ]]; then
         if [[ -z "${hosts[$host1]}" ]]; then
             echo "Error: Unknown hostname '$host1'"
-            echo "Supported hostnames: dante, sheldon, lise, allegro, juwels"
+            echo "Supported hostnames: dante, sheldon, lise, allegro, juwels, jupiter"
             return 1
         fi
         src="${hosts[$host1]}:$path1"
-        if [[ "$host1" == "juwels" ]]; then
-            uses_juwels=true
+        if [[ "$host1" == "juwels" || "$host1" == "jupiter" ]]; then
+            uses_otp=true
         fi
     else
         src="$path1"
@@ -69,12 +70,12 @@ sshcp() {
     if [[ -n "$host2" ]]; then
         if [[ -z "${hosts[$host2]}" ]]; then
             echo "Error: Unknown hostname '$host2'"
-            echo "Supported hostnames: dante, sheldon, lise, allegro, juwels"
+            echo "Supported hostnames: dante, sheldon, lise, allegro, juwels, jupiter"
             return 1
         fi
         dst="${hosts[$host2]}:$path2"
-        if [[ "$host2" == "juwels" ]]; then
-            uses_juwels=true
+        if [[ "$host2" == "juwels" || "$host2" == "jupiter" ]]; then
+            uses_otp=true
         fi
     else
         dst="$path2"
@@ -84,8 +85,8 @@ sshcp() {
     echo "Copying from: $src"
     echo "Copying to: $dst"
     
-    if [[ "$uses_juwels" == true ]]; then
-        echo "Note: juwels requires OTP authentication. You will be prompted to enter your OTP code."
+    if [[ "$uses_otp" == true ]]; then
+        echo "Note: juwels/jupiter require OTP authentication. You will be prompted to enter your OTP code."
         # Use keyboard-interactive authentication for OTP
         scp -r -o PreferredAuthentications=keyboard-interactive,publickey "$src" "$dst"
     else

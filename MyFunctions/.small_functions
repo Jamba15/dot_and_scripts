@@ -5,3 +5,23 @@ function lazygit ()
   git push
 }
 
+# Cartella dei venv: $UV_VENVS se impostata, altrimenti la prima che esiste
+# (dante: /local_scratch001, portatile: /datadisk/Ufficio), infine ~/venv
+function _venvdir ()
+{
+  local d
+  for d in "$UV_VENVS" /local_scratch001/giambagli/venv /datadisk/Ufficio/venv; do
+    [ -n "$d" ] && [ -d "$d" ] && { echo "$d"; return; }
+  done
+  echo "$HOME/venv"
+}
+
+function uvenv ()
+{
+  uv venv "$(_venvdir)/$1" "${@:2}";
+}
+
+function uvactiv ()
+{
+  source "$(_venvdir)/$1/bin/activate";
+}
